@@ -1,0 +1,55 @@
+---
+import Base from '../../layouts/Base.astro';
+
+interface Resource {
+  title: string;
+  category: string;
+  code: string;
+  url: string;
+}
+
+const resources: Resource[] = [
+  { title: '美女五人组跳舞无人直播', category: '无人直播', code: 'czxa', url: 'https://pan.baidu.com/s/1Yfck5cHxbQXXcylIb1zS9w?pwd=czxa' },
+  { title: '抖音无人美女直播！第三视角小游戏', category: '无人直播', code: 'cmuv', url: 'https://pan.baidu.com/s/1P0VqfNHzXF5_CVviGTkKPA?pwd=cmuv' },
+  { title: '支付宝无人直播！OBS转播带货直播间', category: '无人直播', code: 'psd6', url: 'https://pan.baidu.com/s/1UMUzIIHYnK4Tep-0TjXFZA?pwd=psd6' },
+  { title: '【怀旧新娘】无人直播整蛊互动玩法', category: '无人直播', code: 'psrj', url: 'https://pan.baidu.com/s/1pxLYAtK2pjCC9Q7Zh9XAwg?pwd=psrj' },
+  { title: 'AI口罩美女生成教程', category: 'AI短视频教程', code: 'bqq8', url: 'https://pan.baidu.com/s/1hszsE6y_QKGAsw7n2vmf2A?pwd=bqq8' },
+  { title: '制作乡愁视频，月入2万+工作室可批量操作', category: '短视频教程', code: 'kquf', url: 'https://pan.baidu.com/s/1zpl4dBcwmIhJ23hzhPadqg?pwd=kquf' },
+  { title: '蓝海信息差项目', category: '信息差副业', code: 'qq66', url: 'https://pan.baidu.com/s/1QSShGkQH-SvDBFvZkDJgKw?pwd=qq66' },
+];
+
+const categories = [...new Set(resources.map(r => r.category))];
+---
+
+<Base title="资源库" description="精选网赚实战教程、短视频玩法、信息差副业项目网盘资源合集。" activeNav="resources">
+  <div class="breadcrumb"><a href="/">首页</a> / 资源库</div>
+
+  <section class="hero">
+    <h1>📦 网赚资源库</h1>
+    <p>共收录 <b>{resources.length}</b> 个精选资源，点击卡片转存到自己的网盘。</p>
+  </section>
+
+  {categories.map((cat) => {
+    const items = resources.filter(r => r.category === cat);
+    return (
+      <section class="section">
+        <h2 class="section-title">{cat} <small style="color: var(--muted); font-weight: 400;">（{items.length} 个）</small></h2>
+        <div class="grid">
+          {items.map((r) => (
+            <div class="card">
+              <h3>{r.title}</h3>
+              <div style="font-size: 14px; color: var(--muted);">提取码：<b style="color: var(--fg);">{r.code}</b></div>
+              <a class="btn" href={r.url} target="_blank" rel="noopener">前往网盘转存 / 下载</a>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  })}
+
+  <section class="contact-box">
+    <h3>联系站长</h3>
+    <p>获取更多资源或一对一指导，请加微信：<b>jiewu2026</b></p>
+    <img class="qr" src="/weixin_qr.jpg" alt="站长微信二维码" />
+  </section>
+</Base>

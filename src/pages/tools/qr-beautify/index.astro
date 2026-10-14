@@ -1,0 +1,129 @@
+---
+import Base from '../../../layouts/Base.astro';
+---
+
+<Base
+  title="二维码美化"
+  description="生成真正可扫描的自定义样式二维码，支持颜色、圆点形状、导出高清PNG。"
+  activeNav="tools"
+>
+  <div class="breadcrumb"><a href="/">首页</a> / <a href="/tools/">工具箱</a> / 二维码美化</div>
+
+  <section class="hero">
+    <h1>🔳 二维码生成器</h1>
+    <p>输入文本或链接，生成可扫描的二维码。纯前端生成，不上传数据。</p>
+  </section>
+
+  <div class="tool-layout">
+    <div class="control-panel">
+      <div class="control-group">
+        <label>二维码内容</label>
+        <textarea id="qrText" rows="3" placeholder="输入链接或文本">https://example.com</textarea>
+      </div>
+
+      <div class="control-group">
+        <label>前景颜色</label>
+        <select id="qrColor">
+          <option value="#1f2937">经典黑</option>
+          <option value="#1e40af">深蓝</option>
+          <option value="#166534">墨绿</option>
+          <option value="#5b21b6">深紫</option>
+          <option value="#b91c1c">深红</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>容错级别</label>
+        <select id="qrEcc">
+          <option value="L">L (7%)</option>
+          <option value="M" selected>M (15%)</option>
+          <option value="Q">Q (25%)</option>
+          <option value="H">H (30%)</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>尺寸：<span id="sizeVal">400</span>px</label>
+        <input type="range" id="qrSize" min="200" max="800" value="400" step="50" />
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 20px;">
+        <button class="btn" id="downloadBtn" style="flex: 1;">下载二维码</button>
+      </div>
+    </div>
+
+    <div class="preview-area">
+      <canvas id="preview" width="400" height="400"></canvas>
+      <p style="color: var(--muted); font-size: 13px;">生成后请用手机相机测试扫描</p>
+    </div>
+  </div>
+
+  <!-- CDN 引入 qrcode-generator -->
+  <script is:inline src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+</Base>
+
+<script>
+  const canvas = document.getElementById('preview') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+
+  function drawQR() {
+    const text = (document.getElementById('qrText') as HTMLTextAreaElement).value || 'https://example.com';
+    const color = (document.getElementById('qrColor') as HTMLSelectElement).value;
+    const ecc = (document.getElementById('qrEcc') as HTMLSelectElement).value as 'L'|'M'|'Q'|'H';
+    const size = parseInt((document.getElementById('qrSize') as HTMLInputElement).value);
+
+    (document.getElementById('sizeVal') as HTMLElement).textContent = size.toString();
+    canvas.width = size;
+    canvas.height = size;
+
+    // 等待全局 qrcode 函数加载
+    if (typeof (window as any).qrcode !== 'function') {
+      setTimeout(drawQR, 100);
+      return;
+    }
+
+    // 生成QR码：typeNumber=0 表示自动选择
+    const qr = (window as any).qrcode(0, ecc);
+    qr.addData(text);
+    qr.make();
+
+    const count = qr.getModuleCount();
+    const margin = 4; // 白边模块数
+    const totalCells = count + margin * 2;
+    const cellSize = size / totalCells;
+
+    // 白色背景
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+
+    // 画黑色模块（紧密排列，无间隙）
+    ctx.fillStyle = color;
+    for (let row = 0; row < count; row++) {
+      for (let col = 0; col < count; col++) {
+        if (qr.isDark(row, col)) {
+          const x = (col + margin) * cellSize;
+          const y = (row + margin) * cellSize;
+          ctx.fillRect(x, y, cellSize + 0.5, cellSize + 0.5); // +0.5 防止抗锯齿缝隙
+        }
+      }
+    }
+  }
+
+  ['qrText', 'qrColor', 'qrEcc', 'qrSize'].forEach(id => {
+    document.getElementById(id)!.addEventListener('input', drawQR);
+  });
+
+  document.getElementById('downloadBtn')!.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'qrcode.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+
+  // 页面加载后绘制
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', drawQR);
+  } else {
+    drawQR();
+  }
+</script>

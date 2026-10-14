@@ -1,0 +1,137 @@
+---
+import Base from '../../../layouts/Base.astro';
+---
+
+<Base
+  title="图片加噪点"
+  description="给图片添加噪点、干扰线，降低被机器识别概率。上传图片即可处理，纯前端本地运行。"
+  activeNav="tools"
+>
+  <div class="breadcrumb"><a href="/">首页</a> / <a href="/tools/">工具箱</a> / 图片加噪点</div>
+
+  <section class="hero">
+    <h1>🌫 图片加噪点</h1>
+    <p>上传图片，添加噪点和干扰线，降低被OCR和机器视觉识别的概率。图片仅在本地处理。</p>
+  </section>
+
+  <div class="tool-layout">
+    <div class="control-panel">
+      <div class="control-group">
+        <label>上传图片</label>
+        <input type="file" id="fileInput" accept="image/*" style="color: var(--muted); font-size: 14px;" />
+      </div>
+
+      <div class="control-group">
+        <label>噪点强度：<span id="noiseVal">30</span>%</label>
+        <input type="range" id="noiseLevel" min="0" max="100" value="30" />
+      </div>
+
+      <div class="control-group">
+        <label>干扰线密度：<span id="lineVal">20</span>%</label>
+        <input type="range" id="lineLevel" min="0" max="100" value="20" />
+      </div>
+
+      <div class="control-group">
+        <label>干扰线颜色</label>
+        <select id="lineColor">
+          <option value="random">随机颜色</option>
+          <option value="dark">深色</option>
+          <option value="light">浅色</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 20px;">
+        <button class="btn" id="downloadBtn" style="flex: 1;" disabled>下载图片</button>
+      </div>
+    </div>
+
+    <div class="preview-area">
+      <canvas id="preview"></canvas>
+      <p class="preview-placeholder" id="placeholder">请先上传一张图片</p>
+    </div>
+  </div>
+</Base>
+
+<script>
+  const canvas = document.getElementById('preview') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  let img: HTMLImageElement | null = null;
+
+  function rand(min: number, max: number) {
+    return Math.random() * (max - min) + min;
+  }
+
+  function process() {
+    if (!img) return;
+    const noiseLevel = parseInt((document.getElementById('noiseLevel') as HTMLInputElement).value);
+    const lineLevel = parseInt((document.getElementById('lineLevel') as HTMLInputElement).value);
+    const lineColor = (document.getElementById('lineColor') as HTMLSelectElement).value;
+
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+
+    // 噪点
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    const noiseAmount = noiseLevel * 2.55;
+    for (let i = 0; i < data.length; i += 4) {
+      const n = (Math.random() - 0.5) * noiseAmount;
+      data[i] = Math.max(0, Math.min(255, data[i] + n));
+      data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + n));
+      data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + n));
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    // 干扰线
+    const lineCount = Math.floor(lineLevel * canvas.width / 200);
+    for (let i = 0; i < lineCount; i++) {
+      let r: number, g: number, b: number;
+      if (lineColor === 'dark') {
+        r = g = b = rand(0, 80);
+      } else if (lineColor === 'light') {
+        r = g = b = rand(180, 255);
+      } else {
+        r = rand(0, 255); g = rand(0, 255); b = rand(0, 255);
+      }
+      ctx.strokeStyle = `rgba(${r},${g},${b},${rand(0.1, 0.35)})`;
+      ctx.lineWidth = rand(0.5, 2.5);
+      ctx.beginPath();
+      ctx.moveTo(rand(0, canvas.width), rand(0, canvas.height));
+      ctx.lineTo(rand(0, canvas.width), rand(0, canvas.height));
+      ctx.stroke();
+    }
+
+    document.getElementById('downloadBtn')!.removeAttribute('disabled');
+  }
+
+  document.getElementById('fileInput')!.addEventListener('change', (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      img = new Image();
+      img.onload = () => {
+        (document.getElementById('placeholder') as HTMLElement).style.display = 'none';
+        process();
+      };
+      img.src = ev.target!.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  ['noiseLevel', 'lineLevel', 'lineColor'].forEach(id => {
+    document.getElementById(id)!.addEventListener('input', () => {
+      (document.getElementById('noiseVal') as HTMLElement).textContent = (document.getElementById('noiseLevel') as HTMLInputElement).value;
+      (document.getElementById('lineVal') as HTMLElement).textContent = (document.getElementById('lineLevel') as HTMLInputElement).value;
+      process();
+    });
+  });
+
+  document.getElementById('downloadBtn')!.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'noise-image.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+</script>

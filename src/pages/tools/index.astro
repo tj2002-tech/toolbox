@@ -1,0 +1,56 @@
+---
+import Base from '../../layouts/Base.astro';
+
+const tools = [
+  {
+    slug: 'wechat-image',
+    icon: '💬',
+    name: '引流图生成器',
+    description: '输入微信号，生成带干扰线/Emoji/噪点的防OCR图片，用于小红书、抖音私信引流。',
+    tags: ['核心', '引流']
+  },
+  {
+    slug: 'image-noise',
+    icon: '🌫',
+    name: '图片加噪点',
+    description: '给图片添加噪点、干扰线，降低被机器识别概率。上传图片即可处理。',
+    tags: ['图片处理']
+  },
+  {
+    slug: 'qr-beautify',
+    icon: '🔳',
+    name: '二维码美化',
+    description: '生成自定义样式二维码，支持颜色、圆点形状、中心Logo，导出高清PNG。',
+    tags: ['二维码']
+  },
+  {
+    slug: 'xhs-cover',
+    icon: '🎨',
+    name: '小红书封面生成',
+    description: '3:4比例封面模板，输入标题副标题，选配色一键生成小红书封面图。',
+    tags: ['小红书']
+  },
+];
+---
+
+<Base title="工具箱" description="免费在线图片工具：引流图生成器、图片加噪点、二维码美化、小红书封面生成。" activeNav="tools">
+  <div class="breadcrumb"><a href="/">首页</a> / 工具箱</div>
+
+  <section class="hero">
+    <h1>🛠 在线工具箱</h1>
+    <p>所有工具均在浏览器本地运行，不上传任何数据，免费免注册。</p>
+  </section>
+
+  <div class="grid">
+    {tools.map((tool) => (
+      <a href={`/tools/${tool.slug}/`} class="card">
+        <span class="icon">{tool.icon}</span>
+        <h3>{tool.name}</h3>
+        <p>{tool.description}</p>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          {tool.tags.map(tag => <span class="tag">{tag}</span>)}
+        </div>
+      </a>
+    ))}
+  </div>
+</Base>

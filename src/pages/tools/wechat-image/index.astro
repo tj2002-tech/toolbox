@@ -1,0 +1,191 @@
+---
+import Base from '../../../layouts/Base.astro';
+---
+
+<Base
+  title="引流图生成器"
+  description="输入微信号，生成带干扰线/Emoji/噪点的防OCR图片，用于小红书、抖音私信引流。免费免注册，本地处理不上传。"
+  activeNav="tools"
+>
+  <div class="breadcrumb"><a href="/">首页</a> / <a href="/tools/">工具箱</a> / 引流图生成器</div>
+
+  <section class="hero">
+    <h1>💬 引流图生成器</h1>
+    <p>输入微信号，生成带干扰元素的正方形图片，规避平台文字审核与OCR识别。图片仅在本地生成，不上传服务器。</p>
+  </section>
+
+  <div class="tool-layout">
+    <div class="control-panel">
+      <div class="control-group">
+        <label>主要文字（微信号）*</label>
+        <input type="text" id="mainText" placeholder="例如：jiewu2026" value="jiewu2026" />
+      </div>
+      <div class="control-group">
+        <label>顶部文字（选填）</label>
+        <input type="text" id="topText" placeholder="例如：你好呀～" value="请看这里" />
+      </div>
+      <div class="control-group">
+        <label>底部文字（选填）</label>
+        <input type="text" id="bottomText" placeholder="例如：可以加我详聊" value="+me+我" />
+      </div>
+      <div class="control-group">
+        <label>干扰模式</label>
+        <select id="noiseMode">
+          <option value="mixed">混合模式（推荐）</option>
+          <option value="lines">干扰线</option>
+          <option value="emoji">随机 Emoji</option>
+          <option value="dots">噪点</option>
+          <option value="none">无干扰</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>干扰强度：<span id="strengthVal">50</span>%</label>
+        <input type="range" id="strength" min="10" max="100" value="50" />
+      </div>
+      <div class="control-group">
+        <label>背景色</label>
+        <select id="bgStyle">
+          <option value="gradient">渐变背景（推荐）</option>
+          <option value="light">浅色背景</option>
+          <option value="dark">深色背景</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 20px;">
+        <button class="btn" id="downloadBtn" style="flex: 1;">下载图片</button>
+        <button class="btn btn-secondary" id="copyBtn" style="flex: 1;">复制图片</button>
+      </div>
+    </div>
+    <div class="preview-area">
+      <canvas id="preview" width="600" height="600"></canvas>
+      <p style="color: var(--muted); font-size: 13px;">实时预览 · 建议多生成几张轮换使用</p>
+    </div>
+  </div>
+
+  <section class="section" style="max-width: 600px;">
+    <h3 style="margin-bottom: 12px;">使用说明</h3>
+    <ol style="color: var(--muted); font-size: 14px; padding-left: 20px; line-height: 2;">
+      <li>输入微信号（必填），可补充顶部和底部引导文字</li>
+      <li>选择干扰模式，调节干扰强度</li>
+      <li>右侧实时预览效果</li>
+      <li>满意后点击"下载图片"或"复制图片"</li>
+      <li>在微信/小红书聊天框中粘贴发送，添加为表情收藏</li>
+    </ol>
+  </section>
+</Base>
+
+<script>
+  const canvas = document.getElementById('preview') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  const emojis = ['✨','💫','⭐','🌟','💖','💕','🎀','🌸','🌼','🍀','🎈','🎁','💎','🔥','💯','🌈','☀️','🌙','🍃','💭'];
+
+  function rand(min: number, max: number) { return Math.random() * (max - min) + min; }
+
+  function draw() {
+    const w = canvas.width, h = canvas.height;
+    const topText = (document.getElementById('topText') as HTMLInputElement).value;
+    const mainText = (document.getElementById('mainText') as HTMLInputElement).value || '请输入微信号';
+    const bottomText = (document.getElementById('bottomText') as HTMLInputElement).value;
+    const noiseMode = (document.getElementById('noiseMode') as HTMLSelectElement).value;
+    const strength = parseInt((document.getElementById('strength') as HTMLInputElement).value);
+    const bgStyle = (document.getElementById('bgStyle') as HTMLSelectElement).value;
+
+    ctx.clearRect(0, 0, w, h);
+    if (bgStyle === 'gradient') {
+      const grad = ctx.createLinearGradient(0, 0, w, h);
+      grad.addColorStop(0, '#fef3c7'); grad.addColorStop(0.5, '#fce7f3'); grad.addColorStop(1, '#e0f2fe');
+      ctx.fillStyle = grad;
+    } else if (bgStyle === 'light') { ctx.fillStyle = '#fafaf9'; }
+    else { ctx.fillStyle = '#1f2937'; }
+    ctx.fillRect(0, 0, w, h);
+
+    const count = Math.floor(strength * 2.5);
+
+    if (noiseMode === 'lines' || noiseMode === 'mixed') {
+      const lc = noiseMode === 'mixed' ? Math.floor(count * 0.6) : count;
+      for (let i = 0; i < lc; i++) {
+        ctx.strokeStyle = `rgba(${Math.floor(rand(0,255))},${Math.floor(rand(0,255))},${Math.floor(rand(0,255))},${rand(0.08, 0.25)})`;
+        ctx.lineWidth = rand(0.5, 1.5);
+        ctx.beginPath(); ctx.moveTo(rand(0,w), rand(0,h)); ctx.lineTo(rand(0,w), rand(0,h)); ctx.stroke();
+      }
+    }
+    if (noiseMode === 'emoji' || noiseMode === 'mixed') {
+      const ec = noiseMode === 'mixed' ? Math.floor(count * 0.4) : count;
+      ctx.globalAlpha = 0.35;
+      for (let i = 0; i < ec; i++) {
+        ctx.font = `${rand(14, 26)}px sans-serif`;
+        ctx.fillText(emojis[Math.floor(rand(0, emojis.length))], rand(20, w-40), rand(20, h-40));
+      }
+      ctx.globalAlpha = 1;
+    }
+    if (noiseMode === 'dots' || noiseMode === 'mixed') {
+      const dc = noiseMode === 'mixed' ? Math.floor(count * 0.8) : count * 2;
+      for (let i = 0; i < dc; i++) {
+        ctx.fillStyle = `rgba(${Math.floor(rand(0,255))},${Math.floor(rand(0,255))},${Math.floor(rand(0,255))},${rand(0.08, 0.3)})`;
+        ctx.beginPath(); ctx.arc(rand(0,w), rand(0,h), rand(0.5, 1.5), 0, Math.PI*2); ctx.fill();
+      }
+    }
+
+    const textColor = bgStyle === 'dark' ? '#f3f4f6' : '#1f2937';
+
+    if (topText) {
+      ctx.fillStyle = textColor; ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
+      ctx.globalAlpha = 0.65; ctx.fillText(topText, w/2, h/2 - 90); ctx.globalAlpha = 1;
+    }
+
+    // 主文字：每个字符独立大小/位置/颜色微变化
+    const chars = mainText.split('');
+    let totalWidth = 0;
+    const charWidths: number[] = [];
+    const charSizes: number[] = [];
+    chars.forEach(c => {
+      const sz = rand(38, 46);
+      charSizes.push(sz);
+      ctx.font = `bold ${sz}px sans-serif`;
+      const cw = ctx.measureText(c).width;
+      charWidths.push(cw);
+      totalWidth += cw + rand(3, 8);
+    });
+    let startX = (w - totalWidth) / 2;
+    const centerY = h / 2;
+    chars.forEach((c, i) => {
+      ctx.font = `bold ${charSizes[i]}px sans-serif`;
+      const brightness = Math.floor(rand(25, 55));
+      ctx.fillStyle = bgStyle === 'dark'
+        ? `rgb(${200+brightness},${200+brightness},${200+brightness})`
+        : `rgb(${brightness},${brightness},${brightness+5})`;
+      ctx.fillText(c, startX + charWidths[i]/2, centerY + rand(-2, 2));
+      startX += charWidths[i] + rand(3, 8);
+    });
+
+    if (bottomText) {
+      ctx.fillStyle = textColor; ctx.font = '20px sans-serif'; ctx.textAlign = 'center';
+      ctx.globalAlpha = 0.65; ctx.fillText(bottomText, w/2, h/2 + 90); ctx.globalAlpha = 1;
+    }
+
+    ctx.strokeStyle = bgStyle === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(80, h-50); ctx.lineTo(w-80, h-50); ctx.stroke();
+  }
+
+  ['topText','mainText','bottomText','noiseMode','bgStyle'].forEach(id => {
+    document.getElementById(id)!.addEventListener('input', draw);
+  });
+  document.getElementById('strength')!.addEventListener('input', (e) => {
+    document.getElementById('strengthVal')!.textContent = (e.target as HTMLInputElement).value;
+    draw();
+  });
+  document.getElementById('downloadBtn')!.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'wechat-image.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+  document.getElementById('copyBtn')!.addEventListener('click', async () => {
+    try {
+      const blob = await new Promise<Blob>(r => canvas.toBlob(b => r(b!), 'image/png'));
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      alert('图片已复制到剪贴板，去聊天框粘贴吧！');
+    } catch { alert('复制失败，请点击下载图片后手动复制'); }
+  });
+  draw();
+</script>

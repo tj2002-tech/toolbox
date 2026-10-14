@@ -1,0 +1,267 @@
+---
+import Base from '../../../layouts/Base.astro';
+---
+
+<Base
+  title="小红书封面生成器"
+  description="3:4比例小红书封面模板，多种风格模板，输入标题选配色一键生成封面图。"
+  activeNav="tools"
+>
+  <div class="breadcrumb"><a href="/">首页</a> / <a href="/tools/">工具箱</a> / 小红书封面生成</div>
+
+  <section class="hero">
+    <h1>🎨 小红书封面生成器</h1>
+    <p>3:4竖版封面，多种风格模板，输入标题和副标题，选配色一键生成。</p>
+  </section>
+
+  <div class="tool-layout">
+    <div class="control-panel">
+      <div class="control-group">
+        <label>主标题</label>
+        <input type="text" id="title" placeholder="例如：新手必看" value="新手必看" />
+      </div>
+      <div class="control-group">
+        <label>副标题</label>
+        <input type="text" id="subtitle" placeholder="例如：3个技巧搞定" value="3个技巧搞定小红书引流" />
+      </div>
+      <div class="control-group">
+        <label>底部标签（选填）</label>
+        <input type="text" id="tagline" placeholder="例如：建议收藏" value="建议收藏" />
+      </div>
+
+      <div class="control-group">
+        <label>封面风格</label>
+        <select id="template">
+          <option value="big">大字报风格</option>
+          <option value="list">清单列表风格</option>
+          <option value="minimal">极简线条风格</option>
+          <option value="poster">海报拼贴风格</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>配色方案</label>
+        <select id="theme">
+          <option value="pink">樱花粉</option>
+          <option value="blue">天空蓝</option>
+          <option value="green">薄荷绿</option>
+          <option value="orange">暖橙</option>
+          <option value="purple">薰衣草紫</option>
+          <option value="red">复古红</option>
+          <option value="dark">暗夜黑</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>标题字号：<span id="fontSizeVal">56</span>px</label>
+        <input type="range" id="fontSize" min="36" max="80" value="56" />
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 20px;">
+        <button class="btn" id="downloadBtn" style="flex: 1;">下载封面</button>
+      </div>
+    </div>
+
+    <div class="preview-area">
+      <canvas id="preview" width="600" height="800"></canvas>
+    </div>
+  </div>
+</Base>
+
+<script>
+  const canvas = document.getElementById('preview') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+
+  const themes: Record<string, { bg1: string; bg2: string; title: string; sub: string; accent: string; text: string }> = {
+    pink:    { bg1: '#fce7f3', bg2: '#fbcfe8', title: '#9d174d', sub: '#be185d', accent: '#ec4899', text: '#831843' },
+    blue:    { bg1: '#dbeafe', bg2: '#bfdbfe', title: '#1e40af', sub: '#1d4ed8', accent: '#3b82f6', text: '#1e3a8a' },
+    green:   { bg1: '#d1fae5', bg2: '#a7f3d0', title: '#065f46', sub: '#047857', accent: '#10b981', text: '#064e3b' },
+    orange:  { bg1: '#ffedd5', bg2: '#fed7aa', title: '#9a3412', sub: '#c2410c', accent: '#f97316', text: '#7c2d12' },
+    purple:  { bg1: '#ede9fe', bg2: '#ddd6fe', title: '#5b21b6', sub: '#6d28d9', accent: '#8b5cf6', text: '#4c1d95' },
+    red:     { bg1: '#fee2e2', bg2: '#fecaca', title: '#991b1b', sub: '#b91c1c', accent: '#ef4444', text: '#7f1d1d' },
+    dark:    { bg1: '#1f2937', bg2: '#111827', title: '#f9fafb', sub: '#e5e7eb', accent: '#3b82f6', text: '#f3f4f6' },
+  };
+
+  function draw() {
+    const title = (document.getElementById('title') as HTMLInputElement).value || '标题';
+    const subtitle = (document.getElementById('subtitle') as HTMLInputElement).value || '';
+    const tagline = (document.getElementById('tagline') as HTMLInputElement).value || '';
+    const template = (document.getElementById('template') as HTMLSelectElement).value;
+    const theme = themes[(document.getElementById('theme') as HTMLSelectElement).value];
+    const fontSize = parseInt((document.getElementById('fontSize') as HTMLInputElement).value);
+    (document.getElementById('fontSizeVal') as HTMLElement).textContent = fontSize.toString();
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // 背景渐变
+    const grad = ctx.createLinearGradient(0, 0, w, h);
+    grad.addColorStop(0, theme.bg1);
+    grad.addColorStop(1, theme.bg2);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // 装饰圆
+    ctx.globalAlpha = 0.12;
+    ctx.fillStyle = theme.accent;
+    ctx.beginPath(); ctx.arc(w - 60, 80, 100, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(40, h - 120, 80, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    if (template === 'big') {
+      // 大字报风格：大标题居中，顶部装饰条
+      ctx.fillStyle = theme.accent;
+      ctx.fillRect(0, 0, w, 10);
+
+      ctx.fillStyle = theme.title;
+      ctx.font = `bold ${fontSize}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // 自动换行
+      const maxWidth = w - 80;
+      const words = title.split('');
+      let line = '', lines: string[] = [];
+      for (let i = 0; i < words.length; i++) {
+        const test = line + words[i];
+        if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = words[i]; }
+        else { line = test; }
+      }
+      lines.push(line);
+
+      const startY = h/2 - (lines.length * (fontSize + 10))/2 - 30;
+      lines.forEach((l, i) => { ctx.fillText(l, w/2, startY + i * (fontSize + 12)); });
+
+      if (subtitle) {
+        ctx.fillStyle = theme.sub;
+        ctx.font = '26px sans-serif';
+        ctx.globalAlpha = 0.8;
+        ctx.fillText(subtitle, w/2, h/2 + 110);
+        ctx.globalAlpha = 1;
+      }
+    }
+    else if (template === 'list') {
+      // 清单列表风格：标题在顶部，下面列要点
+      ctx.fillStyle = theme.title;
+      ctx.font = `bold ${fontSize - 10}px sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(title, 50, 80);
+
+      // 装饰下划线
+      ctx.strokeStyle = theme.accent;
+      ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(50, 80 + fontSize); ctx.lineTo(50 + 80, 80 + fontSize); ctx.stroke();
+
+      // 模拟列表项
+      const items = subtitle ? subtitle.split(/[,，、]/).slice(0, 4) : ['要点一', '要点二', '要点三'];
+      ctx.font = '24px sans-serif';
+      ctx.fillStyle = theme.text;
+      items.forEach((item, i) => {
+        const y = 200 + i * 70;
+        // 圆点
+        ctx.fillStyle = theme.accent;
+        ctx.beginPath(); ctx.arc(60, y + 14, 8, 0, Math.PI*2); ctx.fill();
+        // 文字
+        ctx.fillStyle = theme.text;
+        ctx.fillText(item, 85, y);
+      });
+    }
+    else if (template === 'minimal') {
+      // 极简线条风格：细线框 + 居中标题
+      ctx.strokeStyle = theme.accent;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.6;
+      ctx.strokeRect(50, 80, w - 100, h - 160);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = theme.title;
+      ctx.font = `bold ${fontSize - 8}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const maxWidth = w - 120;
+      const words = title.split('');
+      let line = '', lines: string[] = [];
+      for (let i = 0; i < words.length; i++) {
+        const test = line + words[i];
+        if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = words[i]; }
+        else { line = test; }
+      }
+      lines.push(line);
+
+      const startY = h/2 - (lines.length * 50)/2;
+      lines.forEach((l, i) => { ctx.fillText(l, w/2, startY + i * 55); });
+
+      if (subtitle) {
+        ctx.fillStyle = theme.sub;
+        ctx.font = '22px sans-serif';
+        ctx.globalAlpha = 0.7;
+        ctx.fillText(subtitle, w/2, h/2 + 100);
+        ctx.globalAlpha = 1;
+      }
+    }
+    else {
+      // 海报拼贴风格：大色块 + 斜向文字
+      ctx.fillStyle = theme.accent;
+      ctx.globalAlpha = 0.15;
+      ctx.fillRect(0, h/2 - 60, w, 120);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = theme.title;
+      ctx.font = `900 ${fontSize}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // 轻微倾斜
+      ctx.save();
+      ctx.translate(w/2, h/2 - 20);
+      ctx.rotate(-0.03);
+      const maxWidth = w - 80;
+      const words = title.split('');
+      let line = '', lines: string[] = [];
+      for (let i = 0; i < words.length; i++) {
+        const test = line + words[i];
+        if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = words[i]; }
+        else { line = test; }
+      }
+      lines.push(line);
+      lines.forEach((l, i) => { ctx.fillText(l, 0, (i - (lines.length-1)/2) * (fontSize + 8)); });
+      ctx.restore();
+
+      if (subtitle) {
+        ctx.fillStyle = theme.sub;
+        ctx.font = '24px sans-serif';
+        ctx.globalAlpha = 0.8;
+        ctx.fillText(subtitle, w/2, h/2 + 100);
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // 底部标签
+    if (tagline) {
+      ctx.fillStyle = theme.accent;
+      ctx.font = 'bold 20px sans-serif';
+      ctx.textAlign = 'center';
+      const tagW = ctx.measureText(tagline).width + 48;
+      ctx.beginPath();
+      ctx.roundRect((w - tagW)/2, h - 90, tagW, 42, 21);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(tagline, w/2, h - 90 + 21);
+    }
+  }
+
+  ['title','subtitle','tagline','template','theme','fontSize'].forEach(id => {
+    document.getElementById(id)!.addEventListener('input', draw);
+  });
+
+  document.getElementById('downloadBtn')!.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'xhs-cover.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+
+  draw();
+</script>

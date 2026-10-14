@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="首页" activeNav="home">
+  <section class="hero">
+    <h1>免费在线图片工具 & 资源库</h1>
+    <p>纯前端本地处理，免注册不上传。引流图生成、图片加噪点、二维码美化、小红书封面，运营人必备工具箱。</p>
+  </section>
+
+  <div class="grid">
+    <a href="/tools/" class="card entry-card">
+      <span class="icon">🛠</span>
+      <h2>工具箱</h2>
+      <p>引流图生成器、图片加噪点、二维码美化、小红书封面生成等图片处理工具，打开即用。</p>
+      <span class="btn">进入工具箱 →</span>
+    </a>
+    <a href="/resources/" class="card entry-card">
+      <span class="icon">📦</span>
+      <h2>资源库</h2>
+      <p>精选网赚实战教程、短视频玩法、信息差副业项目网盘资源合集，一键转存。</p>
+      <span class="btn">浏览资源 →</span>
+    </a>
+  </div>
+
+  <section class="contact-box" id="contact">
+    <h3>联系站长</h3>
+    <p>获取更多工具或一对一指导，请加微信：<b>jiewu2026</b></p>
+    <img class="qr" src="/weixin_qr.jpg" alt="站长微信二维码" />
+    <p style="color: var(--muted); font-size: 13px;">微信扫码直接添加 · 工具持续更新</p>
+  </section>
+</Base>
