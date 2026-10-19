@@ -3,6 +3,12 @@ dist/
 # generated types
 .astro/
 
+# local diagnostic / deploy artifacts
+*.zip
+deploy-log.txt
+dep-status.json
+probe.txt
+
 # dependencies
 node_modules/
 
