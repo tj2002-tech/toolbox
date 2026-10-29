@@ -1,0 +1,41 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+
+<Base
+  title="隐私政策"
+  description="jiewuai 隐私政策：所有工具均在浏览器本地运行，不上传任何数据，无跟踪 Cookie。"
+>
+  <div class="breadcrumb"><a href="/">首页</a> / 隐私政策</div>
+
+  <section class="section" style="max-width: 720px;">
+    <h1 style="font-size: 24px; margin-bottom: 16px;">隐私政策</h1>
+    <p style="color: var(--muted); font-size: 13px; margin-bottom: 24px;">生效日期：{new Date().toISOString().slice(0, 10)}</p>
+
+    <h3 style="margin: 20px 0 10px;">1. 数据本地处理</h3>
+    <p style="color: var(--muted); font-size: 14px; line-height: 1.8;">
+      本站所有在线工具（引流图生成器、图片加噪点、二维码美化、小红书封面生成器等）均使用浏览器本地计算能力运行。
+      您输入的文字、上传的图片全部仅在您的设备上处理，<b style="color: var(--fg);">不会上传到任何服务器</b>，我们无法访问、存储或留存您的任何输入内容。
+    </p>
+
+    <h3 style="margin: 20px 0 10px;">2. 数据收集</h3>
+    <p style="color: var(--muted); font-size: 14px; line-height: 1.8;">
+      本站不使用跟踪型 Cookie、不做用户画像、不收集个人身份信息。为了解访问情况，站点托管方（Cloudflare）可能会记录基础的、匿名的访问日志（如 IP、浏览器类型、访问时间），用于安全与性能维护。这些日志不包含可识别个人的业务数据，且我们不会将其用于任何营销或画像目的。
+    </p>
+
+    <h3 style="margin: 20px 0 10px;">3. 第三方服务</h3>
+    <p style="color: var(--muted); font-size: 14px; line-height: 1.8;">
+      部分工具页面可能通过 CDN 加载开源代码库（如二维码生成库）。加载过程可能产生对第三方 CDN 域名的请求，其隐私处理以其服务商政策为准。
+    </p>
+
+    <h3 style="margin: 20px 0 10px;">4. 外部链接</h3>
+    <p style="color: var(--muted); font-size: 14px; line-height: 1.8;">
+      资源库中的链接指向第三方网盘或其他外部站点，其内容与隐私处理不受本站控制，请自行判断。
+    </p>
+
+    <h3 style="margin: 20px 0 10px;">5. 联系方式</h3>
+    <p style="color: var(--muted); font-size: 14px; line-height: 1.8;">
+      如对本隐私政策有任何疑问，欢迎通过邮箱 <a href="mailto:contact@jiewuai.com">contact@jiewuai.com</a> 与我们联系。
+    </p>
+  </section>
+</Base>
